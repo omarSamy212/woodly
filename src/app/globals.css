@@ -1,0 +1,140 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brown-900: #2A1506;
+  --color-brown-800: #3B2314;
+  --color-brown-700: #4A2E1B;
+  --color-brown-600: #5C3A22;
+  --color-brown-500: #6B4529;
+  --color-brown-400: #8B6340;
+  --color-brown-300: #A6845E;
+  --color-brown-200: #C4A882;
+  --color-brown-100: #DEC9AB;
+  --color-brown-50: #F0E4D4;
+
+  --color-orange-600: #C4611E;
+  --color-orange-500: #E8762A;
+  --color-orange-400: #F09448;
+  --color-orange-300: #F5B070;
+  --color-orange-200: #FACDA0;
+  --color-orange-100: #FDE8D0;
+
+  --color-cream-900: #3B2314;
+  --color-cream-800: #6B5B4E;
+  --color-cream-700: #9B8B7E;
+  --color-cream-600: #B5A898;
+  --color-cream-500: #D4C8B8;
+  --color-cream-400: #E5DCD0;
+  --color-cream-300: #EDE0D2;
+  --color-cream-200: #F5EDE4;
+  --color-cream-100: #FAF6F1;
+  --color-cream-50: #FDFCFA;
+
+  --font-heading: "Bebas Neue", "Impact", sans-serif;
+  --font-body: "DM Sans", "Segoe UI", sans-serif;
+}
+
+/* ─── Base Styles ─── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-brown-800);
+  background: var(--color-cream-200);
+}
+
+/* ─── Animations ─── */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.7s ease-out both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out both;
+}
+
+.animate-slide-left {
+  animation: slide-in-left 0.6s ease-out both;
+}
+
+.animate-slide-right {
+  animation: slide-in-right 0.6s ease-out both;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.5s ease-out both;
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-cream-300);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-brown-300);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brown-400);
+}

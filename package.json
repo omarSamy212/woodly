@@ -1,0 +1,12 @@
+{
+  "name": "woodly",
+  "version": "1.0.0",
+  "description": "WOODLY - Egypt's First Wood Marketplace",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  }
+}
