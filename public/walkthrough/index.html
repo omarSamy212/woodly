@@ -323,6 +323,7 @@ const mat = {
   sand: pbr('velvet', 0.45, { color: 0xdcc6a4, ns: 0.7 }),
   olive: pbr('velvet', 0.45, { color: 0x847f5b, ns: 0.7 }),
   cognac: pbr('leather', 0.7, { color: 0xb07a52, ns: 0.6, rough: 0.75 }),
+  blackLeather: pbr('leather', 0.7, { color: 0x2b2826, ns: 0.6, rough: 0.6 }),
   ivoryLeather: pbr('leather', 0.7, { color: 0xf1e9dd, ns: 0.5, rough: 0.7 }),
   black: M({ color: 0x23201d, roughness: 0.45 }),
   brass: M({ color: 0xc7a46c, metalness: 1, roughness: 0.32 }),
@@ -529,7 +530,6 @@ function overlay(x0, z0, x1, z1, m, y = 0.004) {
   g.userData.uvDone = tile;
   const o = mesh(g, m, (x0 + x1) / 2, y, (z0 + z1) / 2, scene, false); o.rotation.x = -PI / 2; return o;
 }
-overlay(9.4, 0, 11.4, 3.6, mat.pebble);
 overlay(7.8, 11.6, 19.2, 13.0, mat.deck);
 for (const r of [[13.2, 0, 17.4, 3.6], [17.4, 0, 21.6, 4.4], [14.4, 5.4, 19.2, 11.6], [19.2, 6.4, 21.6, 9.2], [19.2, 9.2, 21.6, 13.0], [0.5, 0, 5.4, 3.6]]) overlay(...r, mat.oakFloor);
 
@@ -577,11 +577,11 @@ wall(7.8, 11.6, 7.8, 13, { t: 0.2 });
 // interior
 wall(-0.05, 3.6, 5.4, 3.6, { ops: [glass(-0.05, 4.3), door(4.3, 5.2, -1)] });
 wall(5.4, 0, 5.4, 3.6);
-wall(5.4, 3.2, 9.4, 3.2, { ops: [glass(5.4, 8.45), open(8.45, 9.4)] });
+wall(5.4, 3.2, 9.4, 3.2, { ops: [glass(5.4, 8.45), door(8.45, 9.35, 1, 'b')] });
 wall(9.4, 0, 9.4, 3.6);
-wall(9.4, 3.6, 11.4, 3.6, { ops: [door(9.6, 10.5, -1), glass(10.5, 11.4)] });
+wall(9.4, 3.6, 11.4, 3.6, { ops: [glass(9.4, 11.4)] });
 wall(11.4, 0, 11.4, 3.6);
-wall(11.4, 2.4, 13.2, 2.4, { ops: [door(12.2, 13.0, -1)] });
+wall(11.4, 2.4, 13.2, 2.4, { ops: [door(12.2, 13.0, 1)] });
 wall(13.2, 0, 13.2, 3.6);
 wall(13.2, 3.6, 17.4, 3.6, { ops: [door(13.95, 14.85, -1)] });
 wall(17.4, 0, 17.4, 4.4);
@@ -593,9 +593,9 @@ wall(19.2, 9.2, 21.6, 9.2);
 wall(19.2, 9.2, 19.2, 13, { ops: [arch(9.6, 11.2)] });
 wall(14.4, 5.4, 19.2, 5.4, { ops: [door(14.8, 15.7, 1)] });
 wall(14.4, 5.4, 14.4, 11.6);
-wall(7.8, 11.6, 19.2, 11.6, { ops: [glass(9.8, 12.6), open(12.6, 13.8), glass(13.8, 14.2), glass(14.6, 16.2), open(16.2, 17.4), glass(17.4, 18.9)] });
+wall(7.8, 11.6, 19.2, 11.6, { ops: [glass(9.8, 11.2), open(11.2, 12.5), glass(12.5, 14.2), glass(14.6, 16.2), open(16.2, 17.4), glass(17.4, 18.9)] });
 wall(8.6, 5.0, 12.6, 5.0, { ops: [win(9.8, 12.0, { sill: 0.95, head: 2.2 })] });
-wall(12.6, 5.0, 12.6, 7.0);
+wall(12.6, 5.0, 12.6, 7.0, { ops: [win(5.35, 6.35, { sill: 0.95, head: 2.2 })] });
 wall(11.0, 7.0, 12.6, 7.0);
 
 /* ───────────────────────── spiral staircase ───────────────────────── */
@@ -612,7 +612,13 @@ const STAIR = { x: 8.0, z: 6.6, r: 1.6 };
     obb(mx, mz, len, TI, ang);
     mapLines.push({ x1: p1[0], z1: p1[1], x2: p2[0], z2: p2[1], kind: 'wall' });
   }
-  for (const a of [gapA, gapB]) R(0.07, 2.3, 0.16, 0.01, mat.oak, x + r * Math.cos(a), 0, z + r * Math.sin(a));
+  for (const a of [gapA, gapB]) {
+    const hx = x + r * Math.cos(a), hz = z + r * Math.sin(a);
+    R(0.07, 2.3, 0.16, 0.01, mat.oak, hx, 0, hz);
+    const leaf = G(hx + (a === gapA ? -0.06 : 0.06), hz + 0.08, 0); B(0.04, 2.1, 0.62, mat.oak, 0, 0.01, 0.31, leaf); B(0.02, 0.14, 0.02, mat.brass, a === gapA ? -0.03 : 0.03, 1.0, 0.55, leaf);
+  }
+  for (let i = 0; i < 6; i++) { const a = (118 + i * 6) * PI / 180, rr = r + 0.36; const bs = R(0.28, 0.42, 0.42, 0.03, mat.walnut, x + rr * Math.cos(a), 0, z + rr * Math.sin(a)); bs.rotation.y = -a; colliders.push({ cx: x + rr * Math.cos(a), cz: z + rr * Math.sin(a), r: 0.2 }); }
+  for (let i = 0; i < 3; i++) { const a = (122 + i * 10) * PI / 180, rr = r + 0.36; const cu = R(0.4, 0.08, 0.36, 0.035, mat.linen, x + rr * Math.cos(a), 0.42, z + rr * Math.sin(a)); cu.rotation.y = -a; }
   const steps = 18, rise = (H - 0.15) / steps, sweep = 2 * PI * 0.92;
   C(0.1, H, mat.oak, x, 0, z, scene, 20);
   const rail = [];
@@ -768,6 +774,11 @@ function art(x, z, ry, w, h, kind, y = 1.55) {
   R(w + 0.06, h + 0.06, 0.035, 0.005, mat.oak, 0, y - h / 2 - 0.03, 0.018, g);
   const c = mesh(new THREE.PlaneGeometry(w, h), M({ map: artTex(kind), roughness: 0.9 }), 0, y, 0.037, g, false);
 }
+function flowerBowl(g, x, y, z, color = 0xf2c14b, s = 1) {
+  C(0.16 * s, 0.07 * s, mat.stoneware, x, y, z, g, 28, 0.1 * s);
+  for (let i = 0; i < 9; i++) { const a = i * 2.4, r = (i % 3) * 0.045 * s; const f = S(0.045 * s, M({ color, roughness: 0.6 }), x + Math.cos(a) * r, y + 0.1 * s + (i % 2) * 0.025, z + Math.sin(a) * r, g); }
+  for (let i = 0; i < 7; i++) { const a = i * 0.9; const lf = S(1, mat.leaf, x + Math.cos(a) * 0.13 * s, y + 0.07 * s, z + Math.sin(a) * 0.13 * s, g); lf.scale.set(0.06 * s, 0.015, 0.03 * s); lf.rotation.y = -a; }
+}
 function ceramicSet(g, x, y, z) { C(0.06, 0.18, mat.stoneware, x, y, z, g, 20, 0.08); S(0.06, mat.terracotta, x + 0.16, y + 0.06, z, g); C(0.09, 0.05, mat.stoneware, x - 0.18, y, z + 0.02, g, 24, 0.07); }
 
 /* ───────────────────────── rooms & furnishing ───────────────────────── */
@@ -782,17 +793,16 @@ function ceramicSet(g, x, y, z) { C(0.06, 0.18, mat.stoneware, x, y, z, g, 20, 0
   for (const zc of [1.3, 2.5]) {
     const c = G(1.75, zc, FACE.W);
     C(0.28, 0.03, mat.black, 0, 0.03, 0, c, 5); C(0.025, 0.4, mat.brass, 0, 0.05, 0, c, 8);
-    R(0.54, 0.1, 0.52, 0.04, mat.cognac, 0, 0.45, 0, c); R(0.52, 0.55, 0.08, 0.04, mat.cognac, 0, 0.58, -0.24, c);
+    R(0.54, 0.1, 0.52, 0.04, mat.blackLeather, 0, 0.45, 0, c); R(0.52, 0.6, 0.08, 0.04, mat.blackLeather, 0, 0.58, -0.24, c);
+    for (const sx of [-0.27, 0.27]) R(0.05, 0.05, 0.36, 0.02, mat.black, sx, 0.66, -0.02, c);
     colliders.push({ cx: 1.75, cz: zc, r: 0.28 });
   }
   const cr = G(3.2, 0.3, FACE.S);
-  R(2.6, 0.62, 0.42, 0.02, mat.walnut, 0, 0.08, 0, cr); ceramicSet(cr, -0.7, 0.7, 0); pampasVase(cr, 0.8, 0.7, 0, 0.9);
+  R(2.6, 0.62, 0.42, 0.02, mat.walnut, 0, 0.08, 0, cr); ceramicSet(cr, -0.7, 0.7, 0); C(0.012, 0.3, mat.brass, 0.9, 0.7, 0, cr, 8); C(0.11, 0.15, mat.shade, 0.9, 0.98, 0, cr, 24, 0.13);
+  plant(4.8, 0.32, 0.6, mat.stoneware);
   fcol(3.2, 0.3, 2.6, 0.42);
-  const sh = G(5.16, 1.8, FACE.W);
-  B(2.4, 2.4, 0.36, mat.oak, 0, 0, 0, sh);
-  for (let i = 0; i < 5; i++) { B(2.3, 0.025, 0.32, mat.walnut, 0, 0.14 + i * 0.46, 0.02, sh); books(sh, -1.1, 0.5 + (i % 2) * 0.4, 0.165 + i * 0.46, 0.04); if (i % 2 === 0) ceramicSet(sh, 0.8, 0.165 + i * 0.46, 0.04); }
-  fcol(5.16, 1.8, 2.4, 0.36, FACE.W);
-  plant(3.85, 3.25, 0.9);
+  plant(5.0, 0.95, 1.0);
+  plant(3.85, 3.25, 0.95);
   lantern(2.9, 1.9, 2.45, 0.26);
 })();
 // Coffee corner, just outside the office glass
@@ -804,7 +814,7 @@ function ceramicSet(g, x, y, z) { C(0.06, 0.18, mat.stoneware, x, y, z, g, 20, 0
   R(1.2, 0.03, 0.22, 0.01, mat.walnut, 0, 1.5, -0.12, g); ceramicSet(g, -0.2, 1.53, -0.12);
   B(1.6, 0.012, 0.02, mat.led, 0, 0.865, 0.24, g, false);
   fcol(1.6, 3.9, 1.6, 0.46);
-  plant(0.55, 4.6, 0.9);
+  plant(0.55, 4.6, 0.9); plant(0.5, 5.35, 0.8);
 })();
 // Kitchen (per the plan): full-length counter on the north wall, tall mini bar on the west wall,
 // marble island with cooktop + fruit bowl, three stools facing the glass, warm wall lights instead of upper cabinets
@@ -878,11 +888,11 @@ function ceramicSet(g, x, y, z) { C(0.06, 0.18, mat.stoneware, x, y, z, g, 20, 0
   for (const sx of [6.95, 7.55, 8.15]) { R(0.4, 0.06, 0.36, 0.03, mat.cognac, sx, 0.66, 2.72); R(0.38, 0.22, 0.04, 0.02, mat.cognac, sx, 0.74, 2.9); C(0.018, 0.66, mat.brass, sx, 0, 2.72, scene, 8); mesh(new THREE.TorusGeometry(0.15, 0.008, 6, 24), mat.brass, sx, 0.28, 2.72).rotation.x = PI / 2; colliders.push({ cx: sx, cz: 2.72, r: 0.2 }); }
   for (const px of [7.05, 8.05]) lantern(px, 1.85, 2.2, 0.18);
 })();
-// Lightwell (open to sky): olive trees, pebbles, a teak bench
+// Lightwell (open to sky): five plants, like the plan
 (function lightwell() {
-  oliveTree(9.95, 0.6, 1.25); plant(10.95, 0.6, 1.1, mat.charcoalPot); plant(10.95, 2.55, 0.95, mat.charcoalPot);
-  R(1.0, 0.42, 0.38, 0.03, mat.walnut, 10.4, 0, 1.45); obb(10.4, 1.45, 1.0, 0.38);
-  for (let i = 0; i < 4; i++) R(0.45, 0.025, 0.35, 0.05, mat.travertine, 9.95 + (i % 2) * 0.15, 0.005, 2.0 + i * 0.4);
+  plant(10.15, 0.45, 1.05, mat.charcoalPot); plant(9.75, 1.15, 0.95, mat.charcoalPot); plant(11.0, 1.3, 1.0, mat.charcoalPot);
+  plant(9.72, 3.2, 0.9, mat.charcoalPot); plant(11.08, 3.2, 0.85, mat.charcoalPot);
+  sconce(10.4, 0.13, 0, 2.2);
 })();
 // Bath
 (function bath() {
@@ -890,16 +900,22 @@ function ceramicSet(g, x, y, z) { C(0.06, 0.18, mat.stoneware, x, y, z, g, 20, 0
   B(1.7, 2.2, 0.01, mat.wallTile, 12.3, 0, 0.135);
   wallPane(11.5, 1.0, 12.5, 1.0);
   C(0.09, 0.015, mat.brass, 12.3, 2.15, 0.3); C(0.01, 0.2, mat.brass, 12.3, 2.15, 0.2, scene, 8);
-  const v = G(12.94, 1.65, FACE.W);
-  R(0.8, 0.5, 0.45, 0.02, mat.walnut, 0, 0.3, 0, v); R(0.82, 0.05, 0.47, 0.01, mat.counter, 0, 0.8, 0, v);
+  const v = G(11.66, 1.35, FACE.E);
+  R(0.6, 0.42, 0.42, 0.02, mat.walnut, 0, 0.38, 0, v); R(0.62, 0.05, 0.45, 0.01, mat.counter, 0, 0.8, 0, v);
   const basin = C(0.17, 0.12, mat.ceramic, 0, 0.85, 0.02, v, 28, 0.12); basin.scale.z = 0.8;
   C(0.01, 0.2, mat.brass, 0, 0.85, -0.17, v, 8);
-  const mir = mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.02, 40), mat.mirror, 0, 1.5, -0.21, v); mir.rotation.x = PI / 2;
-  mesh(new THREE.TorusGeometry(0.33, 0.012, 8, 48), mat.brass, 0, 1.5, -0.2, v);
+  const mir = mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.02, 40), mat.mirror, 0, 1.5, -0.2, v); mir.rotation.x = PI / 2;
+  mesh(new THREE.TorusGeometry(0.29, 0.012, 8, 48), mat.brass, 0, 1.5, -0.19, v);
   sconce(0, -0.2, 0, 1.95, v);
-  fcol(12.94, 1.65, 0.8, 0.45, FACE.W);
-  toilet(11.72, 1.9, FACE.E);
+  fcol(11.66, 1.35, 0.6, 0.45, FACE.E);
+  toilet(12.95, 1.6, FACE.W);
+  bidet(11.72, 2.05, FACE.E);
 })();
+function bidet(x, z, ry) {
+  const g = G(x, z, ry);
+  R(0.34, 0.38, 0.5, 0.12, mat.ceramic, 0, 0, 0.02, g); C(0.01, 0.08, mat.brass, 0, 0.38, -0.18, g, 8);
+  colliders.push({ cx: x, cz: z, r: 0.23 });
+}
 function toilet(x, z, ry) {
   const g = G(x, z, ry);
   R(0.36, 0.4, 0.52, 0.12, mat.ceramic, 0, 0, 0.03, g);
@@ -917,8 +933,9 @@ function wallPane(x1, z1, x2, z2) {
   wardrobe(13.56, 1.65, FACE.E, 2.9);
   rug(16.0, 1.6, 2.4, 2.8, mat.rugWarm);
   bed(16.08, 1.6, FACE.W, 1.6, 2.0, { throwM: mat.olive });
-  art(16.2, 3.53, FACE.N, 0.9, 0.65, 1, 1.5);
-  plant(16.95, 3.2, 0.8);
+  const lg = G(15.75, 3.38, FACE.N); R(1.9, 0.4, 0.32, 0.02, mat.walnut, 0, 0.12, 0, lg); ceramicSet(lg, -0.6, 0.52, 0); books(lg, 0.3, 0.8, 0.52, 0, 0.16); fcol(15.75, 3.38, 1.9, 0.32);
+  art(15.75, 3.53, FACE.N, 0.9, 0.65, 1, 1.5);
+  plant(16.95, 3.2, 0.8); plant(16.3, 0.32, 0.75);
 })();
 // Bedroom 3
 (function bed3() {
@@ -927,6 +944,7 @@ function wallPane(x1, z1, x2, z2) {
   bed(20.28, 1.9, FACE.W, 1.6, 2.0, { head: mat.linen, throwM: mat.clay });
   const c = G(20.2, 4.12, FACE.N); R(1.5, 0.5, 0.4, 0.02, mat.walnut, 0, 0.12, 0, c); ceramicSet(c, -0.4, 0.62, 0); pampasVase(c, 0.5, 0.62, 0, 0.8); fcol(20.2, 4.12, 1.5, 0.4);
   art(20.2, 4.33, FACE.N, 0.8, 0.6, 2, 1.6);
+  const dk = G(19.45, 0.3, FACE.S); R(1.45, 0.05, 0.42, 0.01, mat.oak, 0, 0.74, 0, dk); B(1.45, 0.008, 0.02, mat.led, 0, 0.73, 0.2, dk, false); C(0.012, 0.32, mat.brass, -0.55, 0.79, -0.05, dk, 8); C(0.1, 0.14, mat.shade, -0.55, 1.08, -0.05, dk, 24, 0.12); books(dk, 0.2, 0.6, 0.79, -0.05, 0.16); fcol(19.45, 0.3, 1.45, 0.42);
   plant(21.2, 3.85, 0.75);
 })();
 // Ensuite
@@ -959,8 +977,6 @@ function wallPane(x1, z1, x2, z2) {
     fcol(x, z, w, 0.5, ry);
   };
   run(21.32, 7.8, FACE.W, 2.5); run(20.2, 6.72, FACE.S, 1.5); run(20.2, 8.9, FACE.N, 1.5);
-  R(0.6, 0.42, 0.6, 0.12, mat.boucle, 20.25, 0, 7.8); colliders.push({ cx: 20.25, cz: 7.8, r: 0.34 });
-  rug(20.25, 7.8, 1.2, 1.6, mat.rugBig);
 })();
 // Lounge nook (majlis corner with curtains)
 (function nook() {
@@ -981,39 +997,38 @@ function wallPane(x1, z1, x2, z2) {
   rug(15.95, 8.5, 3.0, 3.4, mat.rugBig);
   bed(15.68, 8.5, FACE.E, 1.8, 2.1, { head: mat.linenSand, throwM: mat.sage });
   const bn = G(17.1, 8.5, FACE.E); R(0.45, 0.46, 1.5, 0.06, mat.boucle, 0, 0, 0, bn); fcol(17.1, 8.5, 0.45, 1.5);
-  const sb = G(17.2, 5.67, FACE.S); R(1.7, 0.66, 0.42, 0.02, mat.walnut, 0, 0.1, 0, sb); ceramicSet(sb, -0.5, 0.76, 0); pampasVase(sb, 0.5, 0.76, 0); fcol(17.2, 5.67, 1.7, 0.42);
-  art(17.2, 5.48, FACE.S, 1.2, 0.8, 0, 1.65);
-  loungeChair(17.7, 10.95, -2.4);
-  oliveTree(18.75, 11.2, 1.0);
+  const sb = G(17.05, 5.67, FACE.S); R(2.3, 0.66, 0.42, 0.02, mat.walnut, 0, 0.1, 0, sb); ceramicSet(sb, -0.7, 0.76, 0); pampasVase(sb, 0.75, 0.76, 0); fcol(17.05, 5.67, 2.3, 0.42);
+  const sp = G(16.6, 5.67, 0); C(0.09, 0.14, mat.terracotta, 0, 0.76, 0, sp, 16, 0.07); for (let j = 0; j < 8; j++) { const lf = S(1, mat.leaf2, (rnd() - 0.5) * 0.14, 0.98 + rnd() * 0.12, (rnd() - 0.5) * 0.14, sp); lf.scale.set(0.05, 0.1, 0.02); lf.rotation.set(rnd(), rnd() * 3, rnd() - 0.5); }
+  art(17.05, 5.48, FACE.S, 1.2, 0.8, 0, 1.65);
+  plant(14.75, 11.25, 0.75);
 })();
-// Living room
+// Living room (plan: L-sofa cornered top-left, square table, armchair, TV on the east wall)
 (function living() {
-  rug(11.9, 9.4, 3.3, 2.9, mat.rugWarm);
-  sofa(10.2, 9.55, FACE.E, 2.7, { pillows: [mat.sage, mat.clay, mat.sand] });
-  sofa(11.45, 10.66, FACE.N, 1.6, { pillows: [mat.olive], throwM: null });
-  const ct = G(11.85, 9.35, 0); R(1.05, 0.34, 0.72, 0.08, mat.travertine, 0, 0, 0, ct); ceramicSet(ct, -0.2, 0.34, 0); R(0.3, 0.05, 0.22, 0.01, mat.sand, 0.25, 0.34, 0.05, ct); R(0.28, 0.04, 0.2, 0.01, mat.sage, 0.25, 0.39, 0.05, ct); fcol(11.85, 9.35, 1.05, 0.72);
-  loungeChair(13.15, 7.9, -0.4);
+  rug(12.4, 9.85, 2.6, 2.7, mat.rugWarm);
+  sofa(10.45, 9.9, FACE.E, 2.8, { pillows: [mat.sage, mat.clay, mat.sand] });
+  sofa(11.78, 9.0, FACE.S, 1.65, { pillows: [mat.sand, mat.olive], throwM: null });
+  const ct = G(12.2, 10.2, 0); R(0.92, 0.36, 0.92, 0.03, mat.walnut, 0, 0, 0, ct); flowerBowl(ct, 0, 0.36, 0, 0xf6efe2); fcol(12.2, 10.2, 0.92, 0.92);
+  sofa(13.1, 10.75, -2.3, 0.85, { m: mat.linen, pillows: [mat.sand] });
+  const cb = G(9.72, 10.1, FACE.W); R(1.3, 0.72, 0.3, 0.02, mat.walnut, 0, 0.05, 0, cb); ceramicSet(cb, 0.3, 0.77, 0); fcol(9.72, 10.1, 1.3, 0.3, FACE.W);
   const tv = G(14.2, 9.3, FACE.W);
   for (let sx = -1.6; sx <= 1.6; sx += 0.09) B(0.045, H - 0.05, 0.025, mat.walnut, sx, 0, -0.17, tv);
   R(2.2, 0.38, 0.42, 0.02, mat.walnut, 0, 0.12, 0, tv); R(1.5, 0.86, 0.035, 0.01, mat.screen, 0, 1.1, -0.12, tv); B(2.2, 0.012, 0.02, mat.led, 0, 0.5, 0.21, tv, false);
   ceramicSet(tv, 0.75, 0.5, 0); fcol(14.2, 9.3, 2.2, 0.42, FACE.W);
-  plant(14.05, 11.2, 0.9);
-  floorLamp(9.95, 11.05, 1.55);
-  lantern(11.85, 9.35, 2.4, 0.32);
+  plant(8.2, 11.25, 1.05); floorLamp(8.75, 11.3, 1.5);
+  lantern(12.2, 10.2, 2.4, 0.3);
 })();
 // Stair hall nook
-(function stairHall() { oliveTree(12.2, 5.4, 1.0); loungeChair(11.3, 5.55, FACE.S - 0.2); art(12.53, 6.2, FACE.W, 0.6, 0.8, 3, 1.5); })();
+(function stairHall() { plant(12.25, 6.65, 1.1); })();
 // Dining
 (function dining() {
   rug(3.4, 6.15, 3.8, 2.8, mat.rugBig);
   const t = G(3.4, 6.15, 0);
-  R(2.5, 0.05, 1.1, 0.02, mat.oak, 0, 0.73, 0, t);
+  R(2.5, 0.06, 1.1, 0.02, mat.counter, 0, 0.72, 0, t);
   for (const s of [-0.85, 0.85]) { R(0.1, 0.73, 0.7, 0.03, mat.oak, s, 0, 0, t); }
   R(1.7, 0.06, 0.08, 0.02, mat.oak, 0, 0.18, 0, t);
   for (const s of [-0.75, 0, 0.75]) { diningChair(t, s, 0.78, PI); diningChair(t, s, -0.78, 0); }
   diningChair(t, -1.55, 0, PI / 2); diningChair(t, 1.55, 0, -PI / 2);
-  R(0.7, 0.02, 0.32, 0.01, mat.linenSand, 0, 0.78, 0, t);
-  pampasVase(t, 0, 0.8, 0, 0.8); C(0.07, 0.12, mat.stoneware, 0.35, 0.78, 0.05, t, 16, 0.05); C(0.05, 0.08, mat.terracotta, -0.35, 0.78, -0.04, t, 16);
+  flowerBowl(t, 0, 0.78, 0, 0xf2c14b, 1.2);
   fcol(3.4, 6.15, 3.4, 2.0);
   const cs = G(5.98, 6.6, FACE.W); R(1.6, 0.72, 0.4, 0.02, mat.walnut, 0, 0.08, 0, cs); ceramicSet(cs, 0.4, 0.8, 0); C(0.012, 0.3, mat.brass, -0.4, 0.8, 0, cs, 8); C(0.12, 0.16, mat.shade, -0.4, 1.08, 0, cs, 24, 0.14); fcol(5.98, 6.6, 1.6, 0.4, FACE.W);
   for (let i = 0; i < 3; i++) lantern(2.65 + i * 0.75, 6.15, 2.2, 0.22);
@@ -1022,31 +1037,39 @@ function wallPane(x1, z1, x2, z2) {
 // Salon
 (function salon() {
   rug(3.9, 10.3, 4.3, 3.3, mat.rugBig);
-  sofa(2.0, 9.6, FACE.E, 2.0, { pillows: [mat.clay, mat.sand] });
+  sofa(2.15, 9.6, FACE.E, 2.0, { pillows: [mat.clay, mat.sand] });
+  const wc = G(1.33, 9.55, FACE.E); R(0.3, 0.62, 1.3, 0.02, mat.walnut, 0, 0.05, 0, wc); ceramicSet(wc, 0, 0.67, 0); fcol(1.33, 9.55, 0.3, 1.3, FACE.E);
   sofa(4.2, 11.4, FACE.N, 2.4, { pillows: [mat.sage, mat.sand, mat.clay] });
   loungeChair(3.2, 8.95, FACE.S);
   loungeChair(5.75, 10.2, FACE.W - 0.25);
   const ct = G(3.75, 10.2, 0);
-  const top = C(0.56, 0.08, mat.travertine, 0, 0.3, 0, ct, 48); top.scale.z = 0.62;
-  C(0.36, 0.3, mat.travertine, 0, 0, 0, ct, 40).scale.z = 0.62;
-  ceramicSet(ct, -0.1, 0.38, 0); R(0.3, 0.05, 0.22, 0.01, mat.olive, 0.25, 0.38, 0.03, ct);
-  fcol(3.75, 10.2, 1.12, 0.7);
+  const top = R(0.66, 0.06, 1.15, 0.03, mat.black, 0, 0.34, 0, ct);
+  R(0.5, 0.34, 0.95, 0.12, mat.black, 0, 0, 0, ct);
+  C(0.24, 0.015, mat.counter, 0, 0.4, 0.28, ct, 40);
+  flowerBowl(ct, 0, 0.4, -0.18, 0xf2c14b);
+  fcol(3.75, 10.2, 0.7, 1.2);
   const cons = G(6.5, 11.05, FACE.W - 0.5); R(1.3, 0.62, 0.36, 0.02, mat.walnut, 0, 0.08, 0, cons); pampasVase(cons, 0.35, 0.7, 0); ceramicSet(cons, -0.3, 0.7, 0); fcol(6.5, 11.05, 1.3, 0.36, FACE.W - 0.5);
   art(7.69, 12.3, FACE.W, 0.8, 1.05, 3, 1.55);
   floorLamp(1.0, 8.3); floorLamp(5.6, 12.2); floorLamp(2.55, 11.35, 1.4);
-  oliveTree(6.95, 12.4, 1.15);
+  plant(2.9, 12.0, 0.85); plant(6.95, 12.45, 1.0);
   lantern(3.75, 10.2, 2.4, 0.36);
 })();
 // Balcony
 (function balcony() {
-  C(0.3, 0.03, mat.travertine, 9.1, 0.72, 12.3, scene, 36); C(0.03, 0.72, mat.black, 9.1, 0, 12.3, scene, 8); colliders.push({ cx: 9.1, cz: 12.3, r: 0.32 });
-  for (const sx of [8.55, 9.65]) { const c = G(sx, 12.3, sx < 9 ? FACE.E : FACE.W); R(0.44, 0.05, 0.44, 0.02, mat.walnut, 0, 0.44, 0, c); R(0.44, 0.4, 0.04, 0.02, mat.walnut, 0, 0.5, -0.2, c); R(0.4, 0.05, 0.4, 0.02, mat.linen, 0, 0.49, 0.02, c); for (const [a, b] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) B(0.025, 0.44, 0.025, mat.walnut, a * 0.19, 0, b * 0.19, c); colliders.push({ cx: sx, cz: 12.3, r: 0.25 }); }
-  plant(10.4, 12.62, 0.9, mat.charcoalPot); oliveTree(14.4, 12.6, 1.0); plant(18.75, 12.55, 1.0, mat.charcoalPot);
-  const bench = G(16.6, 12.68, FACE.N); R(1.4, 0.38, 0.42, 0.03, mat.walnut, 0, 0, 0, bench); R(1.3, 0.07, 0.38, 0.03, mat.linen, 0, 0.38, 0, bench); fcol(16.6, 12.68, 1.4, 0.42);
+  C(0.3, 0.03, mat.travertine, 10.0, 0.72, 12.3, scene, 36); C(0.03, 0.72, mat.black, 10.0, 0, 12.3, scene, 8); colliders.push({ cx: 10.0, cz: 12.3, r: 0.32 }); C(0.05, 0.1, mat.paper, 10.0, 0.75, 12.3, scene, 16);
+  for (const sx of [9.45, 10.55]) { const c = G(sx, 12.3, sx < 10 ? FACE.E : FACE.W); R(0.44, 0.05, 0.44, 0.02, mat.walnut, 0, 0.44, 0, c); R(0.44, 0.4, 0.04, 0.02, mat.walnut, 0, 0.5, -0.2, c); R(0.4, 0.05, 0.4, 0.02, mat.linen, 0, 0.49, 0.02, c); for (const [a, b] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) B(0.025, 0.44, 0.025, mat.walnut, a * 0.19, 0, b * 0.19, c); colliders.push({ cx: sx, cz: 12.3, r: 0.25 }); }
+  plant(8.3, 12.45, 1.0, mat.charcoalPot); plant(18.7, 12.5, 1.05, mat.charcoalPot);
+  for (const [lx, lz] of [[18.2, 12.75], [18.95, 11.95]]) { R(0.16, 0.3, 0.16, 0.02, mat.brass, lx, 0, lz); B(0.11, 0.22, 0.11, mat.paper, lx, 0.04, lz, scene, false); }
 })();
 // Hallway
-plant(14.05, 5.12, 0.85);
-plant(5.75, 4.5, 0.7, mat.stoneware);
+(function hallway() {
+  const c1 = G(16.6, 5.18, FACE.N); R(1.5, 0.75, 0.3, 0.02, mat.walnut, 0, 0.1, 0, c1); ceramicSet(c1, 0.3, 0.85, 0); fcol(16.6, 5.18, 1.5, 0.3);
+  const c2 = G(14.22, 6.15, FACE.W); R(1.1, 0.8, 0.32, 0.02, mat.walnut, 0, 0.05, 0, c2);
+  for (const sx of [-0.3, 0.3]) { C(0.08, 0.13, mat.terracotta, sx, 0.85, 0, c2, 16, 0.065); for (let j = 0; j < 8; j++) { const lf = S(1, mat.leaf, sx + (rnd() - 0.5) * 0.12, 1.05 + rnd() * 0.12, (rnd() - 0.5) * 0.12, c2); lf.scale.set(0.045, 0.1, 0.02); lf.rotation.set(rnd(), rnd() * 3, rnd() - 0.5); } }
+  fcol(14.22, 6.15, 1.1, 0.32, FACE.W);
+  plant(13.95, 7.25, 0.8);
+  plant(6.15, 5.3, 0.9);
+})();
 art(16.2, 3.67, FACE.S, 1.0, 0.7, 2, 1.55);
 art(12.3, 2.47, FACE.S, 0.6, 0.8, 1, 1.5);
 
@@ -1164,19 +1187,19 @@ function setQuality(hq) {
 /* ───────────────────────── rooms (labels, chips, detection) ───────────────────────── */
 const ROOMS = [
   { id: 'stair', en: 'Staircase', ar: 'السلم', dim: 'Spiral · Ø 3.2 m', circle: [8.0, 6.6, 2.1], spawn: [8.0, 8.55, 8.0, 6.6] },
-  { id: 'lightwell', en: 'Lightwell', ar: 'المنور', dim: 'Open to sky', r: [9.4, 0, 11.4, 3.6], spawn: [10.05, 3.15, 10.6, 0.4] },
+  { id: 'lightwell', en: 'Lightwell', ar: 'المنور', dim: 'Open to sky', r: [9.4, 0, 11.4, 3.6], spawn: [10.05, 4.4, 10.5, 0.8] },
   { id: 'office', en: 'Office', ar: 'المكتب', dim: '4.2 × 3.6 m', r: [0, 0, 5.4, 3.6], spawn: [4.5, 3.0, 1.2, 1.4] },
   { id: 'kitchen', en: 'Kitchen', ar: 'المطبخ', dim: '4.0 × 3.2 m', r: [5.4, 0, 9.4, 3.2], spawn: [8.95, 2.95, 6.3, 1.0] },
-  { id: 'bath', en: 'Bath', ar: 'الحمام', dim: '2.4 × 1.8 m', r: [11.4, 0, 13.2, 2.4], spawn: [12.4, 2.1, 11.9, 0.3] },
+  { id: 'bath', en: 'Bath', ar: 'الحمام', dim: '2.4 × 1.8 m', r: [11.4, 0, 13.2, 2.4], spawn: [12.55, 2.0, 11.6, 0.6] },
   { id: 'bed2', en: 'Bedroom 2', ar: 'أوضة نوم ٢', dim: '3.6 × 3.6 m', r: [13.2, 0, 17.4, 3.6], spawn: [14.4, 3.1, 17.0, 1.0] },
   { id: 'bed3', en: 'Bedroom 3', ar: 'أوضة نوم ٣', dim: '3.6 × 3.4 m', r: [17.4, 0, 21.6, 4.4], spawn: [18.65, 3.85, 21.0, 1.4] },
   { id: 'ensuite', en: 'Ensuite Bath', ar: 'حمام الماستر', dim: '2.4 × 1.8 m', r: [19.2, 4.4, 21.6, 6.4], spawn: [19.7, 5.95, 21.2, 4.9] },
   { id: 'closet', en: 'Walk-in Closet', ar: 'غرفة الملابس', dim: '2.8 × 2.2 m', r: [19.2, 6.4, 21.6, 9.2], spawn: [19.6, 7.7, 21.2, 6.9] },
   { id: 'nook', en: 'Lounge Nook', ar: 'ركن القعدة', dim: '2.4 × 3.8 m', r: [19.2, 9.2, 21.6, 13.0], spawn: [19.65, 10.1, 21.0, 12.2] },
   { id: 'master', en: 'Master Bedroom', ar: 'أوضة النوم الرئيسية', dim: '4.8 × 4.0 m', r: [14.4, 5.4, 19.2, 11.6], spawn: [18.3, 6.4, 15.2, 9.4] },
-  { id: 'balcony', en: 'Balcony', ar: 'البلكونة', dim: 'From master to living', r: [7.8, 11.6, 19.2, 13.0], spawn: [11.2, 12.2, 18.5, 12.3] },
-  { id: 'stairhall', en: 'Stair Hall', ar: 'بهو السلم', dim: '3.0 × 2.0 m', r: [9.6, 5.0, 12.6, 7.0], spawn: [10.3, 7.3, 12.3, 5.4] },
-  { id: 'living', en: 'Living Room', ar: 'الليفينج', dim: '5.0 × 4.6 m', r: [9.6, 7.0, 14.4, 11.6], spawn: [13.4, 11.0, 10.4, 8.6] },
+  { id: 'balcony', en: 'Balcony', ar: 'البلكونة', dim: 'From master to living', r: [7.8, 11.6, 19.2, 13.0], spawn: [11.6, 12.2, 18.5, 12.3] },
+  { id: 'stairhall', en: 'Stair Hall', ar: 'بهو السلم', dim: '3.0 × 2.0 m', r: [9.6, 5.0, 12.6, 7.0], spawn: [10.3, 7.4, 12.2, 5.4] },
+  { id: 'living', en: 'Living Room', ar: 'الليفينج', dim: '5.0 × 4.6 m', r: [9.6, 7.0, 14.4, 11.6], spawn: [13.6, 7.6, 11.0, 10.4] },
   { id: 'dining', en: 'Dining', ar: 'السفرة', dim: '4.8 × 3.6 m', r: [0, 3.6, 6.4, 8.4], spawn: [5.7, 4.75, 1.8, 7.2] },
   { id: 'salon', en: 'Salon', ar: 'الصالون', dim: '6.2 × 4.8 m', r: [0, 8.4, 9.6, 13.0], spawn: [7.0, 9.0, 1.8, 11.4] },
   { id: 'hall', en: 'Hallway', ar: 'الطرقة', dim: 'Connects the bedrooms', r: [5.4, 3.2, 19.2, 5.4], spawn: [6.2, 4.3, 18.0, 4.7] },
