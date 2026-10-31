@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     domains: ["images.unsplash.com"],
   },
   async rewrites() {
-    return [{ source: "/walkthrough", destination: "/walkthrough.html" }];
+    return [{ source: "/walkthrough", destination: "/walkthrough/index.html" }];
   },
 };
 

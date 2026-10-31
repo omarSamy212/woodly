@@ -67,11 +67,13 @@ src/
 
 ## 3D Walk-in Apartment
 
-`public/walkthrough.html` is a self-contained three.js walk-in model of the apartment floor plan
+`public/walkthrough/index.html` is a three.js walk-in model of the apartment floor plan
 (salon, dining, living, spiral staircase, kitchen with mini bar, office, lightwell, three bedrooms,
 master suite with ensuite, walk-in closet and lounge nook, balcony).
 
-- Open [http://localhost:3000/walkthrough](http://localhost:3000/walkthrough) (rewritten to `/walkthrough.html`).
+- Open [http://localhost:3000/walkthrough](http://localhost:3000/walkthrough) (rewritten to `/walkthrough/index.html`).
+- Calm warm-minimal interior: PBR materials (oak, walnut, linen, velvet, leather, marble, plaster, pebbles) and skies in `public/walkthrough/tex/` come from [Poly Haven](https://polyhaven.com) (CC0).
+- HD mode adds ambient occlusion, bloom and soft sun shadows; Lite mode is used automatically on touch devices.
 - **Walk**: `W A S D` / arrows, `Shift` to run, drag to look. On phones: left thumb walks, right thumb looks.
 - **3D view**: orbit overview; tap the floor to drop in at that spot.
 - Room chips and the minimap teleport you; Evening/Daylight toggles the lighting.
